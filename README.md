@@ -18,6 +18,21 @@ Turn on your Pi2 and login as:</br>
 Become root</br>
 `$ sudo su`
 
+You’ll be wanting the Pi to have a static IP address for this so edit your `/etc/network/interfaces` files to make the eth0 section look like this:
+
+```
+auto eth0
+iface eth0 inet static
+	address 192.168.1.23
+	netmask 255.255.255.0
+	network 192.168.0.0
+	broadcast 192.168.0.255
+	gateway 192.168.1.1
+	dns-search 192.168.1.1
+```
+
+My Pi is allocated 192.168.1.23, change yours and your gateway IP (router IP) to suit your network. Reboot and log back in on your new IP and become root again.
+
 Update Raspbian</br>
 `$ apt-get update`
 
@@ -67,7 +82,7 @@ Mount NTFS partition with read write access</br>
 Make sure the permissions are set right</br>
 `$ chown 775 /home/pi` 
 
-Create two directories for your Downloads and Incomplete Downloads. These directories must owned by user `pi`</br>
+Create two directories for your Downloads and Incomplete Downloads. These directories must be owned by user `pi`</br>
 `$ mkdir -p /home/pi/{Downloads,Incomplete}`</br>
 `$ chown pi:pi /home/pi/{Downloads,Incomplete}`
 
@@ -105,3 +120,10 @@ Now start transmission and make sure everything is working</br>
 Connect to http://raspberry-ip-address:9091 and login to your Transmission installation!
 
 You are now done!
+
+Sources:
+
+https://www.convalesco.org/articles/2015/06/08/raspberry-pi-seedbox-with-transmission-and-torguard/
+
+https://docs.google.com/document/d/1yEunzA1DHaYake4jQYlgh4IPoxfcHP5CXLqQR_dSGHs/edit
+
