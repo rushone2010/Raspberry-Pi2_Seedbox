@@ -136,8 +136,9 @@ To access transmission via web, enable RPC authentication.
 ```
 Change `user` under which Transmission runs and set it up as `pi`. Transmission will change the `password` with a hash algorithm. The rest can be configured with the web interface/remote client.
 
-Open the file `/etc/init.d/transmission-daemon` with your favorite editor and change the `USER` variable on line 13. It must look like `USER=pi`.
+Open the file `/etc/init.d/transmission-daemon` with your favorite editor and change the `USER`. It must look like `USER=pi`.
 
+Open the file `/lib/systemd/system/transmission-daemon.service` and change the `User`. It must look like `User=pi`.
 
 Now start transmission and make sure everything is working</br>
 `$ service transmission-daemon start`
