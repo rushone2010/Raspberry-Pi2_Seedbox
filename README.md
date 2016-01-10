@@ -81,17 +81,8 @@ Install fuse</br>
 Install ntfs-3g</br>
 `$ apt-get install ntfs-3g`
 
-
-Get the UUID:</br>
-`$ ls -l /dev/disk/by-uuid/`
-
-lrwxrwxrwx 1 root root 10 Jan  1  1970 0AC4D607C4D5F543 -> ../../sda1</br>
-Note down the value of the UUID --> 0AC4D607C4D5F543
-
-Get the uid, gid for pi user and group with `id`command (usually 1000) (Make sure you are user `pi`, not root whern running `id`)
-
 Mount the USB Drive and then check if it is accessible at /media</br>
-`$ mount -t ntfs-3g -o uid=1000,gid=1000,umask=007 /dev/sda1 /media`
+`$ mount -t ntfs-3g /dev/sda1 /media`
 
 Note:</br>
 * ntfs-3g for NTFS Drives
@@ -104,7 +95,7 @@ Take a backup of current fstab and then edit</br>
 `$ nano /etc/fstab`
 
 Add the mount information in the fstab file (replace UUID with your own):</br>
-UUID=86D023BBD023B07B  /media ntfs-3g uid=1000,gid=1000,umask=007 0 0
+>/dev/sda1 /media ntfs-3g defaults 0 0
 
 Make sure the permissions are set right</br>
 `$ chown 775 /media` 
