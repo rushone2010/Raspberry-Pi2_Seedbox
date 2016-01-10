@@ -21,23 +21,26 @@ Become root</br>
 You’ll be wanting the Pi to have a static IP address for this so edit your `/etc/network/interfaces` files to make the eth0 section look like this:
 
 ```
-auto eth0
 iface eth0 inet static
-	address 192.168.1.23
-	netmask 255.255.255.0
-	network 192.168.0.0
-	broadcast 192.168.0.255
-	gateway 192.168.1.1
-	dns-search 192.168.1.1
+address 192.168.1.6
+netmask 255.255.255.0
+network 192.168.1.0
+broadcast 192.168.1.255
+gateway 192.168.1.0
 ```
 
-My Pi is allocated 192.168.1.23, change yours and your gateway IP (router IP) to suit your network. Reboot and log back in on your new IP and become root again.
+Leave evrything else untouched.
+
+Remove any existing leases</br>
+`$ rm /var/lib/dhcp/*`
+
+My Pi is allocated 192.168.1.6, change yours and your gateway IP (router IP) to suit your network. Reboot and log back in on your new IP and become root again.
+
+Update Raspbian to the latest packages</br>
+`$ aptitude update; aptitude safe-upgrade` 
 
 Update Raspbian</br>
 `$ apt-get update`
-
-Update the Pi2 to the latest packages</br>
-`$ aptitude update; aptitude safe-upgrade` 
 
 Run the Raspbian Config tool</br>
 `$ raspi-config`
@@ -55,9 +58,11 @@ Run the Raspbian Config tool</br>
   * Lastly update the Config Tool and wait for it to finish.
 
 Reboot</br>
-`$ shutdown -r now`
+`$ reboot`
 
 ### Setting up your external Hard Drive
+Become root</br>
+`$ sudo su`
 
 Check if the drive is connected with `blkid`
 
@@ -76,15 +81,37 @@ Install fuse</br>
 Install ntfs-3g</br>
 `$ apt-get install ntfs-3g`
 
-Mount NTFS partition with read write access</br>
-`$ mount -t ntfs-3g /dev/sda1 /home/pi`
+
+Get the UUID:</br>
+`$ ls -l /dev/disk/by-uuid/`
+
+lrwxrwxrwx 1 root root 10 Jan  1  1970 0AC4D607C4D5F543 -> ../../sda1</br>
+Note down the value of the UUID --> 0AC4D607C4D5F543
+
+Get the uid, gid for pi user and group with `id`command (usually 1000) (Make sure you are user `pi`, not root whern running `id`)
+
+Mount the USB Drive and then check if it is accessible at /media</br>
+`$ mount -t ntfs-3g -o uid=1000,gid=1000,umask=007 /dev/sda1 /media`
+
+Note:</br>
+* ntfs-3g for NTFS Drives
+* vfat for FAT32 Drives
+* ext4 for ext4 Drives
+
+Now, we will configure RasPi to do this after every reboot:</br>
+Take a backup of current fstab and then edit</br>
+`$ cp /etc/fstab /etc/fstab.backup`</br>
+`$ nano /etc/fstab`
+
+Add the mount information in the fstab file (replace UUID with your own):</br>
+UUID=86D023BBD023B07B  /media ntfs-3g uid=1000,gid=1000,umask=007 0 0
 
 Make sure the permissions are set right</br>
-`$ chown 775 /home/pi` 
+`$ chown 775 /media` 
 
 Create two directories for your Downloads and Incomplete Downloads. These directories must be owned by user `pi`</br>
-`$ mkdir -p /home/pi/{Downloads,Incomplete}`</br>
-`$ chown pi:pi /home/pi/{Downloads,Incomplete}`
+`$ mkdir -p /media/Transmission/{Downloads,Incomplete}`</br>
+`$ chown pi:pi /media/Transmission/{Downloads,Incomplete}`
 
 ### Transmission configuration
 Install transmission</br>
@@ -95,9 +122,9 @@ The configuration file for Transmission is `/etc/transmission-daemon/settings.js
 To access transmission via web, enable RPC authentication.
 
 ```
-"download-dir": "/home/pi/Downloads",
+"download-dir": "/media/Transmission/Downloads",
 [...]
-"incomplete-dir": "/home/pi/Incomplete",
+"incomplete-dir": "/media/Transmission/Incomplete",
 [...]
 "rpc-authentication-required": true,
 "rpc-bind-address": "127.0.0.1",
@@ -109,13 +136,11 @@ To access transmission via web, enable RPC authentication.
 ```
 Change `user` under which Transmission runs and set it up as `pi`. Transmission will change the `password` with a hash algorithm. The rest can be configured with the web interface/remote client.
 
-Change the download and incomplete directories to `/home/pi/Downloads` and `/home/pi/Incomplete`
-
 Open the file `/etc/init.d/transmission-daemon` with your favorite editor and change the `USER` variable on line 13. It must look like `USER=pi`.
 
 
 Now start transmission and make sure everything is working</br>
-`$ sudo service transmission-daemon start`
+`$ service transmission-daemon start`
 
 Connect to http://raspberry-ip-address:9091 and login to your Transmission installation!
 
@@ -127,3 +152,4 @@ https://www.convalesco.org/articles/2015/06/08/raspberry-pi-seedbox-with-transmi
 
 https://docs.google.com/document/d/1yEunzA1DHaYake4jQYlgh4IPoxfcHP5CXLqQR_dSGHs/edit
 
+http://www.techjawab.com/2013/06/how-to-setup-mount-auto-mount-usb-hard.html
