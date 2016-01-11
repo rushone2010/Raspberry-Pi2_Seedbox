@@ -37,7 +37,7 @@ Remove any existing leases</br>
 My Pi is allocated 192.168.1.6, change yours and your gateway IP (router IP) to suit your network. Reboot and log back in on your new IP and become root again.
 
 Update Raspbian to the latest packages</br>
-`$ aptitude update; aptitude safe-upgrade` 
+`$ aptitude update; aptitude safe-upgrade`
 
 Update Raspbian</br>
 `$ apt-get update`
@@ -81,6 +81,12 @@ Install fuse</br>
 Install ntfs-3g</br>
 `$ apt-get install ntfs-3g`
 
+Get the UUID of the drive:</br>
+`$ ls -l /dev/disk/by-uuid/`
+
+lrwxrwxrwx 1 root root 10 Jan 11 06:46 220EB2EB0EB2B6DF -> ../../sda1</br>
+Note down the value of the UUID --> 220EB2EB0EB2B6DF
+
 Mount the USB Drive and then check if it is accessible at /media</br>
 `$ mount -t ntfs-3g /dev/sda1 /media`
 
@@ -94,8 +100,8 @@ Take a backup of current fstab and then edit</br>
 `$ cp /etc/fstab /etc/fstab.backup`</br>
 `$ nano /etc/fstab`
 
-Add the mount information in the fstab file (replace UUID with your own):</br>
->/dev/sda1 /media ntfs-3g defaults 0 0
+Add the mount information in the fstab file (remember to replace the UUID with your own):</br>
+>UUID=220EB2EB0EB2B6DF /media ntfs-3g defaults 0 0
 
 Make sure the permissions are set right</br>
 `$ chown 775 /media` 
