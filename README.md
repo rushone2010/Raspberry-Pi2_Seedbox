@@ -18,7 +18,7 @@ Turn on your Pi2 and login as:</br>
 Become root</br>
 `$ sudo su`
 
-You’ll be wanting the Pi to have a static IP address for this so edit your `/etc/network/interfaces` files to make the eth0 section look like this:
+You’ll be wanting the Pi to have a static IP address for this so edit your `/etc/network/interfaces` files to make the eth0 section to look like this:
 
 ```
 iface eth0 inet static
@@ -26,10 +26,15 @@ address 192.168.1.6
 netmask 255.255.255.0
 network 192.168.1.0
 broadcast 192.168.1.255
-gateway 192.168.1.0
+gateway 192.168.1.1
 ```
 
-Leave evrything else untouched.
+To find your address, netmask and broadcast, run</br>
+`$ ifconfig`
+To find gateway (router ip) and destination, run</br>
+`$ netstat -nr`
+
+Leave everything else untouched.
 
 Remove any existing leases</br>
 `$ rm /var/lib/dhcp/*`
@@ -104,7 +109,7 @@ Add the mount information in the fstab file (remember to replace the UUID with y
 >UUID=220EB2EB0EB2B6DF /media ntfs-3g defaults 0 0
 
 Make sure the permissions are set right</br>
-`$ chown 775 /media` 
+`$ chown 775 /media`
 
 Create two directories for your Downloads and Incomplete Downloads. These directories must be owned by user `pi`</br>
 `$ mkdir -p /media/Transmission/{Downloads,Incomplete}`</br>
