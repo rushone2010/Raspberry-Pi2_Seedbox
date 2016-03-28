@@ -30,7 +30,7 @@ gateway 192.168.1.1
 ```
 
 To find your address, netmask and broadcast, run</br>
-`$ ifconfig`
+`$ ifconfig`</br>
 To find gateway (router ip) and destination, run</br>
 `$ netstat -nr`
 
@@ -86,47 +86,63 @@ Install fuse</br>
 Install ntfs-3g</br>
 `$ apt-get install ntfs-3g`
 
+Make a directory in which to mount the USB drive</br>
+`$ sudo mkdir /mnt/usbstorage`
+
+Make pi the owner of the mounted drive and make its permissions read, write and execute for it</br>
+`$ sudo chown -R pi:pi /mnt/usbstorage`</br>
+`$ sudo chmod -R 775 /mnt/usbstorage`
+
+Set all future permissions for the mount point to pi user and group</br>
+`$ sudo setfacl -Rdm g:pi:rwx /mnt/usbstorage`</br>
+`$ sudo setfacl -Rm g:pi:rwx /mnt/usbstorage`
+
 Get the UUID of the drive:</br>
 `$ ls -l /dev/disk/by-uuid/`
 
 lrwxrwxrwx 1 root root 10 Jan 11 06:46 220EB2EB0EB2B6DF -> ../../sda1</br>
 Note down the value of the UUID --> 220EB2EB0EB2B6DF
 
-Mount the USB Drive and then check if it is accessible at /media</br>
-`$ mount -t ntfs-3g /dev/sda1 /media`
-
-Note:</br>
-* ntfs-3g for NTFS Drives
-* vfat for FAT32 Drives
-* ext4 for ext4 Drives
+For all drive types mount the usb with this command, -o insures pi is the owner which should avoid permission issues</br>
+`$ sudo mount -o uid=pi,gid=pi /dev/sda1 /mnt/usbstorage`
 
 Now, we will configure RasPi to do this after every reboot:</br>
 Take a backup of current fstab and then edit</br>
 `$ cp /etc/fstab /etc/fstab.backup`</br>
 `$ nano /etc/fstab`
 
-Add the mount information in the fstab file (remember to replace the UUID with your own):</br>
->UUID=220EB2EB0EB2B6DF /media ntfs-3g defaults 0 0
+Add the mount information at the bottom of the fstab file (remember to replace the UUID with your own):</br>
+For NTFS:</br>
+>UUID=220EB2EB0EB2B6DF /mnt/usbstorage ntfs nofail,uid=pi,gid=pi 0 0
 
-Make sure the permissions are set right</br>
-`$ chown 775 /media`
+For exFAT:</br>
+>UUID=220EB2EB0EB2B6DF /mnt/usbstorage exfat nofail,uid=pi,gid=pi 0 0
+
+For ext4:</br>
+>UUID=220EB2EB0EB2B6DF /mnt/usbstorage ext4 nofail,uid=pi,gid=pi 0 0
+
+Now test the fstab file works
+`$ sudo mount -a`
 
 Create two directories for your Downloads and Incomplete Downloads. These directories must be owned by user `pi`</br>
-`$ mkdir -p /media/Transmission/{Downloads,Incomplete}`</br>
-`$ chown pi:pi /media/Transmission/{Downloads,Incomplete}`
+`$ mkdir -p /mnt/usbstorage/Transmission/{Downloads,Incomplete}`</br>
+`$ chown pi:pi /mnt/usbstorage/Transmission/{Downloads,Incomplete}`
 
 ### Transmission configuration
 Install transmission</br>
 `$ apt-get install transmission-daemon`
+
+Stop the daemon in order to make changes to the config file</br>
+`$ service transmission-daemon stop`
 
 The configuration file for Transmission is `/etc/transmission-daemon/settings.json`. There you can setup the download directory which we created above and several other options.
 
 To access transmission via web, enable RPC authentication.
 
 ```
-"download-dir": "/media/Transmission/Downloads",
+"download-dir": "/mnt/usbstorage/Transmission/Downloads",
 [...]
-"incomplete-dir": "/media/Transmission/Incomplete",
+"incomplete-dir": "/mnt/usbstorage/Transmission/Incomplete",
 [...]
 "rpc-authentication-required": true,
 "rpc-bind-address": "127.0.0.1",
@@ -134,18 +150,23 @@ To access transmission via web, enable RPC authentication.
 "rpc-password": "password",
 "rpc-port": 9091,
 "rpc-url": "/transmission/",
-"rpc-username": "username",
+"rpc-username": "pi",
+"rpc-whitelist": "*",
+"rpc-whitelist-enabled": false,
 ```
-Change `user` under which Transmission runs and set it up as `pi`. Transmission will change the `password` with a hash algorithm. The rest can be configured with the web interface/remote client.
-
-Open the file `/etc/init.d/transmission-daemon` with your favorite editor and change the `USER`. It must look like `USER=pi`.
-
-Open the file `/lib/systemd/system/transmission-daemon.service` and change the `User`. It must look like `User=pi`.
+Change `user` under which Transmission runs and set it up as `pi`. Transmission will change the `password` with a hash algorithm. The rest can be configured with the web interface/remote client. Ensure that the `rpc-whitelist-enabled` is set to false or you will not be able to log in remotly.
 
 Now start transmission and make sure everything is working</br>
 `$ service transmission-daemon start`
 
 Connect to http://raspberry-ip-address:9091 and login to your Transmission installation!
+
+OPTIONAL:</br>
+If you get permission errors do the following:
+
+Open the file `/etc/init.d/transmission-daemon` with your favorite editor and change the `USER`. It must look like `USER=pi`.
+
+Open the file `/lib/systemd/system/transmission-daemon.service` and change the `User`. It must look like `User=pi`.
 
 You are now done!
 
@@ -156,3 +177,5 @@ https://www.convalesco.org/articles/2015/06/08/raspberry-pi-seedbox-with-transmi
 https://docs.google.com/document/d/1yEunzA1DHaYake4jQYlgh4IPoxfcHP5CXLqQR_dSGHs/edit
 
 http://www.techjawab.com/2013/06/how-to-setup-mount-auto-mount-usb-hard.html
+
+http://www.htpcguides.com/properly-mount-usb-storage-raspberry-pi/
