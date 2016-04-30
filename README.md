@@ -1,4 +1,4 @@
-# Setting up Rasberry Pi2 2 as a Seedbox with Transmission Remote.
+# Setting up Rasberry Pi 2 as a Seedbox with Transmission Remote.
 
 ### Prerequisites
 In order to create a seedbox you are going to need the following hardware:
